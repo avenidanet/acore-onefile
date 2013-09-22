@@ -14,12 +14,11 @@
 /*
  * Configuration
  */
-
 $config = Settings::Init();
 $config->host = 'localhost';
 $config->user = 'root';
 $config->pass = 'root';
-$config->database = '';
+$config->database = 'usuarios';
 
 /*
  * Module main
@@ -37,7 +36,7 @@ class mainModule extends AbstractModule{
 		$data = $this->model->querySelect("usuarios");
 		
 		echo "<h2>Settings (vars comunes)</h2>";
-		A::log($this->vars);
+		A::log($this->acore);
 		
 		echo "<h2>Metodos</h2>";
 		A::log($data[0]);

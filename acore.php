@@ -38,7 +38,7 @@ class A{
 		if (is_dir($path)) {
 			if ($dh = opendir($path)) {
 				$files = array();
-				while (($file = readdir($dh)) !== false) {
+				while (($file = readdir($dh)) !== FALSE) {
 					if (!is_dir($path . $file)){
 						$files[] = $path.$file;
 					}
@@ -70,14 +70,14 @@ class A{
 class Settings{
 
 	private $vars = array();
-	private static $instance = null;
+	private static $instance = NULL;
 
 	private function __construct(){
 	}
 
 	public static function init()
 	{
-		if (self::$instance == null) {
+		if (self::$instance == NULL) {
 			self::$instance = new self();
 		}
 		return self::$instance;
@@ -102,11 +102,13 @@ class Settings{
 class acore{
 	
 	private $controllers = array();
+	public $vars = NULL;
 
 	public function __construct(){
 		if (!session_id()) {
 	      session_start();
 	    }
+	    $this->vars = Settings::init();
 	}
 	
 	private function addModule($nameModule){
@@ -140,10 +142,10 @@ class acore{
  */
 class DatabasePDO extends PDO{
 
-	private static $instance = null;
-	private $recordSet = null;
+	private static $instance = NULL;
+	private $recordSet = NULL;
 	private $query = "";
-	protected $acore = null;
+	protected $acore = NULL;
 
 	public function __construct()
 	{
@@ -157,7 +159,7 @@ class DatabasePDO extends PDO{
 
 	public static function Init()
 	{
-		if (self::$instance == null) {
+		if (self::$instance == NULL) {
 			self::$instance = new self();
 		}
 		return self::$instance;
@@ -283,11 +285,11 @@ class DatabasePDO extends PDO{
  * ABSTRACT CLASS MODULE
  */
 abstract class AbstractModule{
-	protected $model = null;
-	protected $vars = null;
+	protected $model = NULL;
+	protected $acore = NULL;
 	
 	public function __construct($activateDB = TRUE){
-		$this->vars = Settings::init();
+		$this->acore = Settings::Init();
 		if($activateDB){
 			$this->model = new DatabasePDO;
 		}
