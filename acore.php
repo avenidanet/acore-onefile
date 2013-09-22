@@ -132,9 +132,15 @@ class Template{
 
 	public function __call($name,$params) {
 		if (array_key_exists($name, $this->templates)) {
-			return $this->getTemplate($name,$params[0]);
+			if(isset($params[1])){
+				return $this->getTemplate($name,$params[0],FALSE);
+			}elseif(isset($params[0])){
+				echo $this->getTemplate($name,$params[0],TRUE);
+			}else{
+				echo $this->templates[$name];
+			}
 		}else{
-			echo "No template!!";
+			A::error("template", "Template ".$name."  not found :(");
 		}
 	}
 
@@ -142,26 +148,17 @@ class Template{
 		$this->templates[$name] = $value;
 	}
 
-	private function getTemplate($name_template,$data){
-		if(isset($this->templates[$name_template])){
-			$template_origin = $this->templates[$name_template];
-		}else{
-			$template_origin = $name_template;
-		}
-		$fields = array();
-		$values = array();
-		foreach ($data as $field => $value ){
-			$fields[] = ":".$field;
-			if(is_array($value)){
-				foreach ($value[1] as $v){
-					$nuevos .= $this->getTemplate($value[0], $v);
-				}
-				$values[] = $nuevos;
-			}else{
+	private function getTemplate($name_template,$data,$print){
+		$output = '';
+		foreach ($data as $d){
+			$fields = array();
+			$values = array();
+			foreach ($d as $field => $value ){
+				$fields[] = "[:".$field."]";
 				$values[] = $value;
 			}
+			$output  .= str_replace($fields, $values, $this->templates[$name_template]);
 		}
-		$output  = str_replace($fields, $values, $template_origin);
 		return $output;
 	}
 }

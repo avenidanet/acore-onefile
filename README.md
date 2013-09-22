@@ -4,7 +4,13 @@ ACore (One File)
 
 Versión ligera del proyecto Acore.
 
-Este desarrollo esta bajo licencia MIT.
+http://www.avenidanet.com
+
+Documentación y proyecto en http://www.avenidanet.com/acore (No habilitado todavía)
+
+Desarrollo orientado a módulos (basados en Model View Controller). 
+Cada modulo es llamado ACM (ACore Módulo). 
+Además gestiona fácilmente base de datos, templates, llamados a apis, validaciones, etc.
 
 ## Modo de uso
 
@@ -112,7 +118,14 @@ Borrar datos en la base de datos.
 
 ## Metodos del view
 
-Visualizaciones y templates.
+Crear un template:
+``` php
+$this->view->input = "[:id]<input type='text' />[:email] [:fecha] [:identificacion]<br/>";
+```
+Usar un template, $data es un arreglo con los registros y cada unos de los campos a reemplazar [:campo]
+``` php
+$this->view->input($data);
+``
 
 ## Metodos generales
 
@@ -147,7 +160,7 @@ Log, muestra de arreglos o datos.
 ``` php
 $array_fruits = array('orange','banana');
 A::log($array_fruits);
-``
+```
 
 Error, mostrar un error para realizar cualquier tipo de debug.
 
@@ -155,7 +168,7 @@ Error, mostrar un error para realizar cualquier tipo de debug.
 
 A::error('lugar donde se produce el error','descripcion del error');
 
-``
+```
 
 Validar datos.
 Tipos: text, number, phone, email, name, id
@@ -166,11 +179,9 @@ A::validate('texto a evaluar','tipo');
 
 Angular parametros, devuelve en un arreglo valores pasados por el metodo http de angular
 ``` php
-
 $data = A::ng_params();
-
 ```
-
+Este desarrollo esta bajo licencia MIT.
 
 Copyright (c) 2006-2013 Brian Salazar [www.avenidanet.com]
 

@@ -40,6 +40,14 @@ class mainModule extends AbstractModule{
 		
 		echo "<h2>Metodos</h2>";
 		A::log($data[0]);
+		
+		echo "<h2>Uso del view</h2>";
+		$this->view->input = "[:id]<input type='text' />[:email] [:fecha] [:identificacion]<br/>";
+		$this->view->input($data);
+		
+		$this->view->otro = "hola";
+		$this->view->otro();
+		
 	}
 	
 }
