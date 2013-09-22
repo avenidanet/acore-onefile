@@ -1,6 +1,6 @@
 ACore (One File)
+====
 ##Simple Framework PHP v.1.0.0
-=====
 
 Versión ligera del proyecto Acore.
 
