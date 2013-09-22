@@ -11,12 +11,34 @@
 * 
 */
 
+function __autoload($className) {
+	A::error("core", "Class [".$className."] not found :(");
+}
+
 /*
  * CLASE A | ACORE
  */
 class A{
 	
 	private function __construct(){
+	}
+	
+	public static function cache_begin($name,$cachetime=60){
+		$cachefile = 'cached-'.$name.'.html';
+		
+		if (file_exists($cachefile) && time() - $cachetime < filemtime($cachefile)) {
+			include($cachefile);
+			exit;
+		}
+		ob_start();		
+	}
+	
+	public static function cache_end($name){
+		$cachefile = 'cached-'.$name.'.html';
+		$cached = fopen($cachefile, 'w');
+		fwrite($cached, ob_get_contents());
+		fclose($cached);
+		ob_end_flush();
 	}
 	
 	public static function script($data,$load=''){
@@ -114,7 +136,7 @@ class Settings{
 		if(isset($this->vars[$name])){
 			return $this->vars[$name];
 		} else {
-			A::error("Settings", "Variable [".$name."] not found :(");
+			A::error("settings", "Variable [".$name."] not found :(");
 		}
 	}
 
@@ -140,7 +162,7 @@ class Template{
 				echo $this->templates[$name];
 			}
 		}else{
-			A::error("template", "Template ".$name."  not found :(");
+			A::error("template", "Template [".$name."]  not found :(");
 		}
 	}
 
@@ -181,7 +203,7 @@ class acore{
 	private function addModule($nameModule){
 		$file_module = "ac".ucfirst($nameModule).".php";
 		if(file_exists($file_module)){
-			include_once($file_module);
+			require_once($file_module);
 			$classController = $nameModule . "Module";
 			$this->controllers[$nameModule] = new $classController;
 			return $this->controllers[$nameModule];
@@ -340,8 +362,7 @@ class DatabasePDO extends PDO{
 				return TRUE;
 			}
 		}else{
-			A::error("database", "Check query.");
-			A::log($sentence);
+			A::error("database", "Check query [".$sentence."]");
 			A::log($data);
 			return FALSE;
 		}

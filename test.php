@@ -19,7 +19,12 @@ $app = new acore;
 	<h2>Variables</h2>
 	<p><?php A::log($app->vars)?></p>
 	
-	<h2>Modulo no encontrado</h2>
-	<p><?php $app->main->fin()?></p>
+	<h2>Cache</h2>
+	<?php A::cache_begin("inicio")?>
+	
+	<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quas a adipisci debitis non dolorum error et nobis eveniet saepe hic culpa soluta inventore unde sunt ullam nemo expedita. Deserunt odio!</p>
+	<p><?php $app->main->inicio()?></p>
+	
+	<?php A::cache_end("inicio")?>
 </body>
 </html>
