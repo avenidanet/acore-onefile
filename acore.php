@@ -15,11 +15,16 @@
  * CLASE A | ACORE
  */
 class A{
+	
+	private function __construct(){
+	}
+	
 	public static function script($data,$load=''){
 		$CDN = array(	'jquery'=>'<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>',
 						'angular'=>'<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>',
-						'swfObject'=>'<script src="//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>',
-						'validate'=>'<script src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>');
+						'swfobject'=>'<script src="//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>',
+						'validate'=>'<script src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>',
+						'gmaps'=>'<script src="//maps.googleapis.com/maps/api/js?v=3&sensor=false"></script>');
 		$jss = explode(',',$data);
 		foreach ($jss as $js){
 			echo $CDN[$js];
@@ -31,6 +36,28 @@ class A{
 					echo '<script src="'.$js.'"></script>';
 				}
 			}
+		}
+	}
+	
+	public static function ng_params(){
+		return json_decode(file_get_contents('php://input'));
+	}
+	
+	public static function validate($string,$type='text'){
+		$patterns = array(	'text'=>'/^[a-z\d_ .áéíóúñ]{1,255}$/i',
+				'number'=>'/^[0-9]{1,20}$/i',
+				'name'=>'/^[a-z\d_ .áéíóúñ]{4,60}$/i',
+				'email'=>'/^[^0-9][a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[@][a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{2,4}$/',
+				'id'=>'/^\d{1,2}[-]\d{4}[-]\d{4}$/',
+				'phone'=>'#^\d{4}[\s\.-]?\d{4}$#');
+		if (trim($string) != "") {
+			if (preg_match($patterns[$type], $string)) {
+				return true;
+			}else{
+				return false;
+			}
+		}else{
+			return false;
 		}
 	}
 	
@@ -93,6 +120,49 @@ class Settings{
 
 	public function __set($name, $value) {
 		$this->vars[$name] = $value;
+	}
+}
+
+/*
+ * CLASS TEMPLATE
+ */
+class Template{
+
+	private $templates = array();
+
+	public function __call($name,$params) {
+		if (array_key_exists($name, $this->templates)) {
+			return $this->getTemplate($name,$params[0]);
+		}else{
+			echo "No template!!";
+		}
+	}
+
+	public function __set($name,$value) {
+		$this->templates[$name] = $value;
+	}
+
+	private function getTemplate($name_template,$data){
+		if(isset($this->templates[$name_template])){
+			$template_origin = $this->templates[$name_template];
+		}else{
+			$template_origin = $name_template;
+		}
+		$fields = array();
+		$values = array();
+		foreach ($data as $field => $value ){
+			$fields[] = ":".$field;
+			if(is_array($value)){
+				foreach ($value[1] as $v){
+					$nuevos .= $this->getTemplate($value[0], $v);
+				}
+				$values[] = $nuevos;
+			}else{
+				$values[] = $value;
+			}
+		}
+		$output  = str_replace($fields, $values, $template_origin);
+		return $output;
 	}
 }
 
@@ -286,10 +356,12 @@ class DatabasePDO extends PDO{
  */
 abstract class AbstractModule{
 	protected $model = NULL;
+	protected $view = NULL;
 	protected $acore = NULL;
 	
 	public function __construct($activateDB = TRUE){
 		$this->acore = Settings::Init();
+		$this->view = new Template();
 		if($activateDB){
 			$this->model = new DatabasePDO;
 		}

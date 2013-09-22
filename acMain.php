@@ -9,6 +9,7 @@
  * @copyright Brian Salazar 2006-2013
  * @license http://mit-license.org
  *
+ * EXAMPLE MODULE main
  */
 
 /*
@@ -23,7 +24,6 @@ $config->database = 'usuarios';
 /*
  * Module main
  */
-
 class mainModule extends AbstractModule{
 	
 	public function __construct(){
