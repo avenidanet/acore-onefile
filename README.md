@@ -105,6 +105,10 @@ A::log($this->vars->var1);
 
 ```
 Acceso a model y view.
+``` php
+	$this->model->metodo;
+	$this->view->metodo;
+```
 
 ## Metodos del model
 
@@ -125,7 +129,7 @@ $this->view->input = "[:id]<input type='text' />[:email] [:fecha] [:identificaci
 Usar un template, $data es un arreglo con los registros y cada unos de los campos a reemplazar [:campo]
 ``` php
 $this->view->input($data);
-``
+```
 
 ## Metodos generales
 
@@ -165,9 +169,7 @@ A::log($array_fruits);
 Error, mostrar un error para realizar cualquier tipo de debug.
 
 ``` php
-
 A::error('lugar donde se produce el error','descripcion del error');
-
 ```
 
 Validar datos.
