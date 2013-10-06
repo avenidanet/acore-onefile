@@ -42,14 +42,16 @@ class A{
 	}
 	
 	public static function script($data,$load=''){
-		$CDN = array(	'jquery'=>'<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>',
-						'angular'=>'<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.3/angular.min.js"></script>',
-						'swfobject'=>'<script src="//ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js"></script>',
-						'validate'=>'<script src="//ajax.aspnetcdn.com/ajax/jquery.validate/1.11.1/jquery.validate.min.js"></script>',
-						'gmaps'=>'<script src="//maps.googleapis.com/maps/api/js?v=3&sensor=false"></script>');
+		$CDN = array(	'acore'=>'//apps.avenidanet.com/acore/acore.min.js',
+						'jquery'=>'//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js',
+						'angular'=>'//cdnjs.cloudflare.com/ajax/libs/angular.js/1.1.5/angular.min.js',
+						'swfobject'=>'//cdnjs.cloudflare.com/ajax/libs/swfobject/2.2/swfobject.js',
+						'validate'=>'//cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.11.1/jquery.validate.min.js',
+						'gmaps'=>'//maps.googleapis.com/maps/api/js?v=3&sensor=false',
+						'tween'=>'//cdnjs.cloudflare.com/ajax/libs/gsap/1.10.3/TweenMax.min.js');
 		$jss = explode(',',$data);
 		foreach ($jss as $js){
-			echo $CDN[$js];
+			echo '<script src="'.$CDN[$js].'"></script>';
 		}
 		if($load != ''){
 			$jss = self::files($load);
