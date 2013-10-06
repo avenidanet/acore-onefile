@@ -2,7 +2,7 @@ ACore (One File)
 ====
 ##Simple Framework PHP v.1.0.0
 
-[![New Acore](http://avenidanet.com/acore/new_acore.jpg)]
+http://avenidanet.com/acore/new_acore.jpg
 
 Versión ligera del proyecto Acore.
 
