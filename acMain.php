@@ -24,7 +24,7 @@ $config->database = 'usuarios';
 /*
  * Module main
  */
-class mainModule extends AbstractModule{
+class acMain extends AbstractModule{
 	
 	public function __construct(){
 		//Desactivar DB

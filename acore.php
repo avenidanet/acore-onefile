@@ -206,7 +206,7 @@ class acore{
 		$file_module = "ac".ucfirst($nameModule).".php";
 		if(file_exists($file_module)){
 			require_once($file_module);
-			$classController = $nameModule . "Module";
+			$classController = "ac".$nameModule;
 			$this->controllers[$nameModule] = new $classController;
 			return $this->controllers[$nameModule];
 		}else{
