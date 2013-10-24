@@ -62,6 +62,17 @@ class A{
 			}
 		}
 	}
+	//Aporte Marvin Solano
+	public static function css($directory){
+		if($directory != ''){
+			$css = self::files($directory);
+			foreach ($css as $fcss){
+				if(substr($fcss,-4) == ".css"){
+					echo '<link rel="stylesheet" href="'.$fcss.'" />';
+				}
+			}
+		}
+	}
 	
 	public static function ng_params(){
 		return json_decode(file_get_contents('php://input'));
@@ -391,3 +402,5 @@ abstract class AbstractModule{
 		A::error("module", "Module [".$name."] not found :(");
 	}
 }
+
+$acore = new acore;
