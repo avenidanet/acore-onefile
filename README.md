@@ -16,7 +16,9 @@ Además gestiona fácilmente base de datos, templates, llamados a apis, validaci
 
 ## Modo de uso
 
-Los módulos se reconocen por esta nomenclatura acNombre.php | Equivalente a los módulos originales de ACore.
+Solo es necesario el archivo acore.php, un modulo representado por acNombre.php (en el repositorio se ofrece una demo llamada acMain.php) y el archivo que va hacer uso del acore en este caso index.php.
+
+Los módulos se reconocen por esta nomenclatura acNombre.php.
 
 Se crea una clase con el nombre del archivo, siendo una extensión de AbstractModule
 
@@ -26,7 +28,7 @@ class acNombre extends AbstractModule{
 }
 ```
 
-Por defecto la conexión a base de datos esta habilitada, entonces antes de la clase hay configurar los datos para la conexión.
+Por defecto la conexión a base de datos esta habilitada, entonces antes de la clase hay que configurar los datos para la conexión.
 
 ``` php
 
@@ -37,6 +39,8 @@ $config->pass = 'root';
 $config->database = 'usuarios';
 
 class acNombre extends AbstractModule{
+
+...
 
 ``` 
 
@@ -60,7 +64,7 @@ Este es un ejemplo de un metodo controlador
 
 ```
 
-Para utilizarlo en el proyecto
+Para utilizarlo en el proyecto (index.php u otro)
 
 ``` php
 
