@@ -1,6 +1,6 @@
 <?php
 /**
-* ACore OneFile v.1.0.0
+* ACore OneFile v.1.1.0
 *
 * Simple framework php
 *
@@ -248,6 +248,7 @@ class DatabasePDO extends PDO{
 	private $recordSet = NULL;
 	private $query = "";
 	protected $acore = NULL;
+	private $debug = FALSE;
 
 	public function __construct()
 	{
@@ -266,6 +267,10 @@ class DatabasePDO extends PDO{
 		}
 		return self::$instance;
 	}
+	
+	public function debug(){
+		$this->debug = TRUE;
+	}
 
 	/*
 	 * QUERY NORMAL
@@ -281,7 +286,7 @@ class DatabasePDO extends PDO{
 	*
 	* (SELECT * FROM table WHERE field= :field ORDER BY field ASC LIMIT 0,100) | array(field => value)
 	*/
-	public function querySelect($table,$data='*',$where='',$fields=array(),$order='',$limit='',$other=''){
+	public function querySelect($tables,$data='*',$where='',$fields=array(),$order='',$limit='',$other=''){
 		$sentence = "SELECT ";
 		 
 		if(is_array($data)){
@@ -289,8 +294,27 @@ class DatabasePDO extends PDO{
 		}else{
 			$sentence .= $data;
 		}
-		 
+		
+		if(is_array($tables)){
+			$num_table = 1;
+			foreach ($tables as $table_name => $table_field ){
+				if($num_table == 1){
+					$table = $table_field;
+					$table_name = $table_field;
+				}else{
+					$table_field = explode(',',$table_field);
+					$table_field[1] = ($table_field[1])?$table_field[1]:$table_field[0];
+					$join .= " INNER JOIN ".$table_name." ON ".$table_ant.".".$table_field[0]." = ".$table_name.".".$table_field[1]." ";
+				}
+				$table_ant = $table_name;
+				$num_table++;
+			}
+		}else{
+			$table = $tables;
+		}
+		
 		$sentence .= " FROM ".$table;
+		$sentence .= ( $join == '') ? '' : $join;
 		$sentence .= ( $where == '' ) ? '' : ' WHERE ' . $where;
 		$sentence .= ( $order == '' ) ? '' : ' ORDER BY ' . $order;
 		$sentence .= ( $limit == '' ) ? '' : ' LIMIT ' . $limit;
@@ -320,7 +344,7 @@ class DatabasePDO extends PDO{
 		 
 		$sentence = "INSERT INTO " . $table ." (".$fields.") VALUES (".$values.");";
 		 
-		return $this->sendQuery($sentence,$data,$table);
+		return $this->sendQuery($sentence,$data);
 	}
 
 	/*
@@ -338,7 +362,7 @@ class DatabasePDO extends PDO{
 		 
 		$arrays = array_merge($data,$fields);
 
-		return $this->sendQuery($sentence,$arrays,$table);
+		return $this->sendQuery($sentence,$arrays);
 	}
 
 	/*
@@ -354,30 +378,51 @@ class DatabasePDO extends PDO{
 	/*
 	 * PDO Send Query ('saneadas')
 	*/
-	private function sendQuery($sentence,$data,$table=NULL){
-		$pdos = $this->prepare($sentence);
-		if(!empty($data)){
-			foreach ($data as $field => $value){
-				if(is_numeric( $value )){
-					$pdos->bindValue(":".$field, $value, PDO::PARAM_INT);
-				}else{
-					$pdos->bindValue(":".$field, $value, PDO::PARAM_STR);
-				}
-			}
-		}
-
-		if($pdos->execute()){
-			if($sentence[0] == "S"){
-				return $pdos->fetchALL(PDO::FETCH_ASSOC);
-			}elseif ($sentence[0] == "I") {
-				return PDO::lastInsertId();
-			}else{
-				return TRUE;
-			}
-		}else{
-			A::error("database", "Check query [".$sentence."]");
+	private function sendQuery($sentence,$data){
+		if($this->debug){
+			A::error("database", "Debug Mode [".$sentence."]");
 			A::log($data);
 			return FALSE;
+		}else{		
+			$pdos = $this->prepare($sentence);
+			if(!empty($data)){
+				foreach ($data as $field => $value){
+					if(is_numeric( $value )){
+						$pdos->bindValue(":".$field, $value, PDO::PARAM_INT);
+					}else{
+						$pdos->bindValue(":".$field, $value, PDO::PARAM_STR);
+					}
+				}
+			}
+	
+			if($pdos->execute()){
+				if($sentence[0] == "S"){
+					return $pdos->fetchALL(PDO::FETCH_ASSOC);
+				}elseif ($sentence[0] == "I") {
+					return PDO::lastInsertId();
+				}else{
+					return TRUE;
+				}
+			}else{
+				A::error("database", "Check query [".$sentence."]");
+				A::log($data);
+				return FALSE;
+			}
+		}	
+	}
+	
+	/*
+	 * Dynamic query
+	* insertIn_products($data) = queryInsert('products',$data);
+	*/
+	public function __call($name,$params){
+		$methods = explode('In_',$name);
+		if(count($methods) == 2){
+			array_unshift($params,$methods[1]);
+			$method = 'query'.ucwords($methods[0]);
+			return call_user_func_array(array($this,$method),$params);
+		}else{
+			A::error("database", "Method [".$name."] not found :(");
 		}
 	}
 }

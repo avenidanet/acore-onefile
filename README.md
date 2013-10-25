@@ -1,6 +1,6 @@
 ACore (One File)
 ====
-##Simple Framework PHP v.1.0.0
+##Simple Framework PHP v.1.1.0
 
 ![New Acore](http://avenidanet.com/acore/tree_acore.jpg)
 
@@ -18,10 +18,10 @@ Además gestiona fácilmente base de datos, templates, llamados a apis, validaci
 
 Los módulos se reconocen por esta nomenclatura acNombre.php | Equivalente a los módulos originales de ACore.
 
-Se crea una clase con el nombre del módulo + "Module" siendo una extensión de AbstractModule
+Se crea una clase con el nombre del archivo, siendo una extensión de AbstractModule
 
 ``` php
-class nombreModule extends AbstractModule{
+class acNombre extends AbstractModule{
 	//Metodos propios
 }
 ```
@@ -36,7 +36,7 @@ $config->user = 'root';
 $config->pass = 'root';
 $config->database = 'usuarios';
 
-class nombreModule extends AbstractModule{
+class acNombre extends AbstractModule{
 
 ``` 
 
@@ -65,8 +65,9 @@ Para utilizarlo en el proyecto
 ``` php
 
 include 'acore.php';
-$app = new acore;
-$app->nombre->test();
+
+//Ya la instancia de $acore ha sido creada en el include
+$acore->nombre->test();
 
 ```
 
@@ -81,6 +82,17 @@ Ejemplo de un metodo controlador con model (tabla usuarios), utilizando los meto
 	}
 
 ```
+
+Se pueden crear cuantos modulos se necesiten, cada uno gestiona un controller, model y view totalmente independiente.
+``` php
+include 'acore.php';
+
+$acore->modulo1->test(); //Metodo en acModulo1.php
+
+$acore->modulo2->test(); //Metodo en acModulo2.php
+
+```
+
 ## Metodos del controller
 
 Acceso a las variables globales dentro de la clase módulo
@@ -98,7 +110,7 @@ o de forma directa.
 ``` php
 
 include 'acore.php';
-$app = new acore;
+
 //Asignar valor
 $this->vars->var1 = 'Hello';
 
@@ -123,21 +135,43 @@ Realizar una consulta
 ``` php
 	//(SELECT * FROM table WHERE field= :field ORDER BY field ASC LIMIT 0,100) | array(field => value)
 	$this->model->querySelect($table,'*',$where,$fields=array(),$order,$limit,$other);
+	//or
+	$this->model->selectIn_nametable('*',$where,$fields=array(),$order,$limit,$other);
+	// Example: $this->model->selectIn_products();
+```
+Realizar una consulta en varias tablas
+``` php
+	//(SELECT * FROM table1 INNER JOIN table2 ON table1.id = table2.id INNER JOIN table3 ON table2.id2 = table3.id3 ;)
+	$tables = array('table_root','table2'=>'id','table3'=>'id2,id3');
+	$this->model->querySelect($tables);
 ```
 Insertar datos en la base de datos.
 ``` php
 	//(INSERT INTO table (fields) as (:fields)) | array(field=> value)
 	$this->model->queryInsert($table,$data);
+	//or
+	$this->model->insertIn_nametable($data); // Example: $this->model->insertIn_products($data);
 ```
 Actualizar datos en la base de datos.
 ``` php
 	//(UPDATE table SET field = :field WHERE field = :field)
 	$this->model->queryUpdate($table,$data,$where,$fields);
+	//or
+	$this->model->updateIn_nametable($data,$where,$fields);
 ```
 Borrar datos en la base de datos.
 ``` php
 	//(DELETE FROM table WHERE field = :field)
 	$this->model->queryDelete($table,$where,$fields);
+	//or
+	$this->model->deleteIn_nametable($where,$fields);
+```
+
+Si se desea solo ver la consulta sin realizarla, se puede activar el modo debug.
+``` php
+	$this->model->debug(); //Eliminar después de su uso
+	//Antes de la o las consultas a visualizar.
+	$this->model->selectIn_products();
 ```
 
 ## Metodos del view
@@ -177,18 +211,24 @@ $config->host;
 
 ```
 
-CDN para incluir javascript en el proyecto.
-Opciones: jquery, angular,swfobject, validate, gmaps
+Función para incluir javascript (CDN o directorio) y css en el proyecto.
+
+Opciones con JS: jquery, angular, swfobject, validate, gmaps, acore.
 Además si se agrega el segundo parametro (directorio) incluirá todos los js que se encuentren en la misma.
 
+Con CSS solo se debe agregar el directorio.
 ``` php
-
 <head>
   <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
   <title>README</title>
-  <?php A::script('jquery, angular','js/')?>
+  <?php A::css('css/')?>
 </head>
-
+<body>
+	<div id="container">
+	  
+	</div>
+	<?php A::script('jquery, angular','js/')?>
+</body>
 ```
 Log, muestra de arreglos o datos.
 
