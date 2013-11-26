@@ -288,6 +288,7 @@ class DatabasePDO extends PDO{
 	*/
 	public function querySelect($tables,$data='*',$where='',$fields=array(),$order='',$limit='',$other=''){
 		$sentence = "SELECT ";
+		$join = '';
 		 
 		if(is_array($data)){
 			$sentence .= implode(',', $data);
