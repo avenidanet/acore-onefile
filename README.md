@@ -16,14 +16,14 @@ Además gestiona fácilmente base de datos, templates, llamados a apis, validaci
 
 ## Modo de uso
 
-Solo es necesario el archivo acore.php, un modulo representado por acNombre.php (en el repositorio se ofrece una demo llamada acMain.php) y el archivo que va hacer uso del acore en este caso index.php.
+Solo es necesario el archivo acore.php, crear un modulo representado por el uso de un archivo llamado acNombredelmodulo.php (en el repositorio se ofrece una demo llamada acMain.php) y el archivo que va hacer uso del acore en este caso index.php.
 
-Los módulos se reconocen por esta nomenclatura acNombre.php.
+Los módulos se reconocen por esta nomenclatura acNombredelmodulo.php. 
 
 Se crea una clase con el nombre del archivo, siendo una extensión de AbstractModule
 
 ``` php
-class acNombre extends AbstractModule{
+class acNombredelmodulo extends AbstractModule{
 	//Metodos propios
 }
 ```
@@ -38,7 +38,7 @@ $config->user = 'root';
 $config->pass = 'root';
 $config->database = 'usuarios';
 
-class acNombre extends AbstractModule{
+class acNombredelmodulo extends AbstractModule{
 
 ...
 
@@ -71,7 +71,18 @@ Para utilizarlo en el proyecto (index.php u otro)
 include 'acore.php';
 
 //Ya la instancia de $acore ha sido creada en el include
-$acore->nombre->test();
+$acore->nombredelmodulo->test();
+
+```
+
+En el caso de que el modulo se encuentre en una carpeta (solo un nivel) se llama de la siguiente forma
+
+``` php
+
+include 'acore.php';
+
+//Ya la instancia de $acore ha sido creada en el include
+$acore->carpeta_nombredelmodulo->test();
 
 ```
 
@@ -87,7 +98,8 @@ Ejemplo de un metodo controlador con model (tabla usuarios), utilizando los meto
 
 ```
 
-Se pueden crear cuantos modulos se necesiten, cada uno gestiona un controller, model y view totalmente independiente.
+Se pueden crear cuantos modulos se necesiten, cada uno gestiona un controller, model o data y view totalmente independiente.
+
 ``` php
 include 'acore.php';
 
@@ -124,8 +136,11 @@ A::log($this->vars->var1);
 ```
 Acceso a model y view.
 ``` php
-	$this->model->metodo;
-	$this->view->metodo;
+	$this->model->metodo; //Accede al model (manejo de base de datos)
+	
+	$this->view->metodo; //Accede al view (crea templates para visualización de datos)
+	
+	$this->data->metodo; //Accede a data (base de datos flat en archivos .dac) Se utiliza como metodo alternativo para proyectos rapidos que no requiera del uso de muchos registros.
 ```
 
 ## Metodos del model
@@ -176,6 +191,48 @@ Si se desea solo ver la consulta sin realizarla, se puede activar el modo debug.
 	$this->model->debug(); //Eliminar después de su uso
 	//Antes de la o las consultas a visualizar.
 	$this->model->selectIn_products();
+```
+
+## Metodos del data
+
+Si se utiliza el metodo Data, es para almacenar datos en un archivo plano como si se tratara de una base de datos, se recomienda su uso solo para pocos registros en condiciones donde no es posible una conexión a base de datos.
+
+Metodo uso, conexión y desconexión
+``` php
+	$this->model->connect('filename','password');
+	
+	//Se realiza las consultas necesarias
+	
+	$this->model->close(); //Importante, si no, no se guardan los datos
+```
+Insertar datos en la base de datos.
+``` php
+	$data = array("field"=>"value","field"=>"value");
+	$this->model->dataInsert($data); //Retorna el id agregado
+```
+Obtener todos los datos.
+``` php
+	$this->model->allData(); //Retorna un arreglo con todos los datos
+```
+Realizar una consulta
+``` php
+	//Obtener un registro conociendo su ID
+	$id = 10;
+	$registro = $this->model->dataSelect($id);
+	
+	//Obtener registros de acuerdo a un criterio
+	$where = array("field"=>10); // Se puede utilizar varios campos, se comportan como AND
+	$registros = $this->model->dataSelect($where);
+```
+Actualizar datos.
+``` php
+	$where = array("field"=>10); // Se puede utilizar varios campos, se comportan como AND
+	$this->model->dataUpdate($where,$data);
+```
+Borrar datos.
+``` php
+	$where = array("field"=>10); // Se puede utilizar varios campos, se comportan como AND
+	$this->model->dataDelete($where);
 ```
 
 ## Metodos del view
@@ -238,7 +295,8 @@ Log, muestra de arreglos o datos.
 
 ``` php
 $array_fruits = array('orange','banana');
-A::log($array_fruits);
+A::log($array_fruits); //Log normal
+A::log($array_fruits,true); //Log extendido
 ```
 
 Error, mostrar un error para realizar cualquier tipo de debug.
@@ -258,6 +316,22 @@ Angular parametros, devuelve en un arreglo valores pasados por el metodo http de
 ``` php
 $data = A::ng_params();
 ```
+
+Listar un directorio, obtener resultado en un arreglo
+``` php
+$data = A::files("directory/"); //Archivos y ruta
+
+$data = A::files("directory/",false); //Solo el nombre de los archivos 
+```
+
+Encriptar o desencriptar texto por medio de una clave
+```php
+$encriptado = A::encrypt($text,$key);
+
+$desencriptar = A::decrypt($text,$key);
+```
+
+Cualquier error o consulta, favor enviarla info[a]avenidanet.com 
 
 Este desarrollo esta bajo licencia MIT.
 

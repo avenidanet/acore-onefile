@@ -62,7 +62,7 @@ class A{
 			}
 		}
 	}
-	//Aporte Marvin Solano
+	//Aporte Marvin Solano ->
 	public static function css($directory){
 		if($directory != ''){
 			$css = self::files($directory);
@@ -73,6 +73,7 @@ class A{
 			}
 		}
 	}
+	//<-
 	
 	public static function ng_params(){
 		return json_decode(file_get_contents('php://input'));
@@ -96,24 +97,50 @@ class A{
 		}
 	}
 	
-	public static function files($path){
+	// Tomado de http://penajoseomar.wordpress.com ->
+	public static function encrypt($string, $key) {
+		$result = "";
+		for($i=0; $i<strlen($string); $i++) {
+			$char = substr($string, $i, 1);
+			$keychar = substr($key, ($i % strlen($key))-1, 1);
+			$char = chr(ord($char)+ord($keychar));
+			$result.=$char;
+		}
+		return base64_encode($result);
+	}
+	
+	public static function decrypt($string, $key) {
+		$result = "";
+		$string = base64_decode($string);
+		for($i=0; $i<strlen($string); $i++) {
+			$char = substr($string, $i, 1);
+			$keychar = substr($key, ($i % strlen($key))-1, 1);
+			$char = chr(ord($char)-ord($keychar));
+			$result.=$char;
+		}
+		return $result;
+	}
+	//<-
+	
+	public static function files($path,$withpath=TRUE){
 		if (is_dir($path)) {
-			if ($dh = opendir($path)) {
-				$files = array();
-				while (($file = readdir($dh)) !== FALSE) {
-					if (!is_dir($path . $file)){
-						$files[] = $path.$file;
-					}
+			$files = array();
+			foreach(scandir($path) as $file) {
+				if (!is_dir($path . $file)){
+					$files[] = ($withpath)?$path.$file:$file;
 				}
-				closedir($dh);
-				return $files;
 			}
+			return $files;
 		}
 	}
 
-	public static function log($data){
+	public static function log($data,$extend=FALSE){
 		echo "<pre>";
-		print_r($data);
+		if($extend){
+			var_dump($data);
+		}else{
+			print_r($data);
+		}
 		echo "</pre>";
 	}
 
@@ -213,24 +240,33 @@ class acore{
 	    $this->vars = Settings::init();
 	}
 	
-	private function addModule($nameModule){
-		$file_module = "ac".ucfirst($nameModule).".php";
+	private function addModule($name){
+		$module = explode("_", $name);
+    	$name = (isset($module[1]))?$module[1]:$module[0];
+		if(isset($module[1])){
+			$file_module = $module[0]."/ac".ucfirst($name).".php";
+		}else{
+			$file_module = "ac".ucfirst($name).".php";
+		}
+		
 		if(file_exists($file_module)){
 			require_once($file_module);
-			$classController = "ac".$nameModule;
-			$this->controllers[$nameModule] = new $classController;
-			return $this->controllers[$nameModule];
+			$classController = "ac".$name;
+			$this->controllers[$name] = new $classController;
+			return $this->controllers[$name];
 		}else{
-			A::error("core", "Module [".$nameModule."] not found :(");
+			A::error("core", "Module [".$name."] not found :(");
 			return FALSE;
 		}
 	}		
 
     public function __get($name) {
-		if (!array_key_exists($name, $this->controllers)) {
+    	$module = explode("_", $name);
+    	$name_tmp = (isset($module[1]))?$module[1]:$module[0];
+		if (!array_key_exists($name_tmp, $this->controllers)) {
             return $this->addModule($name);
         }else{
-			return $this->controllers[$name];
+			return $this->controllers[$name_tmp];
         }
     }
     
@@ -429,6 +465,94 @@ class DatabasePDO extends PDO{
 }
 
 /*
+ * CLASS DATA (DB FLAT FILE) | ACORE
+*/
+class Data {
+
+	private $data_source = array();
+	private $dataFile = "acore";
+	private $secure = "%4c0r3$";
+	
+	public function connect($filename='',$pass=''){
+		$this->secure = ($pass=='')?$this->secure:$pass;
+		$this->dataFile = ($filename=='')?$this->dataFile:$filename;
+
+		if(file_exists($this->dataFile.".acd")){
+			$file = file_get_contents($this->dataFile.".acd");
+			$this->data_source = json_decode(A::decrypt($file,$this->secure),TRUE);
+		}else{
+			$fp = fopen($this->dataFile.".acd","w");
+			fwrite($fp, A::encrypt(json_encode($this->data_source),$this->secure));
+			fclose($fp);
+		}
+	}
+	public function save(){
+		$fp = fopen($this->dataFile.".acd","w");
+		fwrite($fp, A::encrypt(json_encode($this->data_source),$this->secure));
+		fclose($fp);
+	}
+	private function where($conditional){
+		$rows = array();
+		foreach ($this->data_source as $index => $row){
+			$find = 0;
+			$keys = array_keys($conditional);
+			foreach ($keys as $key){
+				if(isset($row[$key]) && $row[$key] == $conditional[$key]){
+					$find++;
+				}
+			}
+			if($find == count($keys)){
+				$rows[] = $index;
+			}
+		}
+		return $rows;
+	}
+	public function queryInsert($data){
+		$this->data_source[] = $data;
+		return end(array_keys($this->data_source));
+	}
+	public function querySelect($where){
+		if(is_array($where)){
+			$search = $this->where($where);
+			$find = array();
+			foreach ($search as $index){
+				$find[] = $this->data_source[$index];
+			}
+			return $find;
+		}else{
+			if($where == "*"){
+				return $this->data_source;
+			}else{
+				return $this->data_source[$where];
+			}
+		}
+	}
+	public function queryUpdate($where,$data){
+		if(is_array($where)){
+			$search = $this->where($where);
+			foreach ($search as $index){
+				$this->data_source[$index] = $data;
+			}
+		}else{
+			$this->data_source[$where] = $data;
+		}
+	}
+	public function queryDelete($where){
+		if(is_array($where)){
+			$search = $this->where($where);
+			foreach ($search as $index){
+				unset($this->data_source[$index]);
+			}
+		}else{
+			unset($this->data_source[$where]);
+		}
+	}
+	public function __call($name,$params){
+		A::error("data", "Method [".$name."] not found :(");
+	}
+}
+
+/*
  * ABSTRACT CLASS MODULE
  */
 abstract class AbstractModule{
@@ -439,6 +563,7 @@ abstract class AbstractModule{
 	public function __construct($activateDB = TRUE){
 		$this->acore = Settings::Init();
 		$this->view = new Template();
+		$this->data = new Data;
 		if($activateDB){
 			$this->model = new DatabasePDO;
 		}
