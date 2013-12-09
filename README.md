@@ -40,8 +40,7 @@ $config->pass = 'root';
 $config->database = 'usuarios';
 
 class acNombredelmodulo extends AbstractModule{
-
-...
+```
 
 Si se desea configurar internamente (esto para controlar que tipo de conexion se realiza), 
 hay 2 tipos por el momento "sql" o "data", la forma de realizarlo es la siguiente:
