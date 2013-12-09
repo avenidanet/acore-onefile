@@ -28,7 +28,8 @@ class acNombredelmodulo extends AbstractModule{
 }
 ```
 
-Por defecto la conexión a base de datos esta habilitada, entonces antes de la clase hay que configurar los datos para la conexión.
+Por defecto tratará de conectarse a base de datos si la configuración esta presente, 
+esta sería la forma de configurar los datos para la conexión (antes de clase).
 
 ``` php
 
@@ -42,14 +43,21 @@ class acNombredelmodulo extends AbstractModule{
 
 ...
 
-``` 
-
-Se puede desactivar, incluyendo un constructor en el módulo
+Si se desea configurar internamente (esto para controlar que tipo de conexion se realiza), 
+hay 2 tipos por el momento "sql" o "data", la forma de realizarlo es la siguiente:
 
 ``` php
 
 	public function __construct(){
-		parent::__construct(FALSE);
+		parent::__construct();
+		
+		$this->connect("mysql","localhost","user","pass","database"); // Conexión MySQL
+		//Para acceder a sus metodos $this->model
+		
+		//o, y (se puede usar ambos)
+		
+		$this->connect("data","table","pass"); //Se guardará en un archivo llamado name.dac;
+		//Para acceder a sus metodos $this->data
 	}
 	
 ```
@@ -199,11 +207,11 @@ Si se utiliza el metodo Data, es para almacenar datos en un archivo plano como s
 
 Metodo uso, conexión y desconexión
 ``` php
-	$this->model->connect('filename','password');
+	$this->connect('data','filename','password'); //Debe llamarse en el constructor
 	
-	//Se realiza las consultas necesarias
+	//Acá se realizan las consultas necesarias
 	
-	$this->model->close(); //Importante, si no, no se guardan los datos
+	$this->model->save(); //Importante, si no, no se guardan los datos
 ```
 Insertar datos en la base de datos.
 ``` php

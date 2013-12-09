@@ -473,7 +473,7 @@ class Data {
 	private $dataFile = "acore";
 	private $secure = "%4c0r3$";
 	
-	public function connect($filename='',$pass=''){
+	public function __construct($filename='',$pass=''){
 		$this->secure = ($pass=='')?$this->secure:$pass;
 		$this->dataFile = ($filename=='')?$this->dataFile:$filename;
 
@@ -560,12 +560,25 @@ abstract class AbstractModule{
 	protected $view = NULL;
 	protected $acore = NULL;
 	
-	public function __construct($activateDB = TRUE){
+	public function __construct(){
 		$this->acore = Settings::Init();
 		$this->view = new Template();
 		$this->data = new Data;
-		if($activateDB){
+		if(isset($this->acore->host) && isset($this->acore->user) && isset($this->acore->pass) && isset($this->acore->database)){
 			$this->model = new DatabasePDO;
+		}
+	}
+	public function connect($type,$localhost='',$user='',$pass='',$database=''){
+		if($type == "sql"){
+			$this->acore->host = $localhost;
+			$this->acore->user = $user;
+			$this->acore->pass = $pass;
+			$this->acore->database = $database;
+			$this->model = new DatabasePDO;
+		}elseif($type = "data"){
+			$this->data = new Data($localhost,$user);
+		}else{
+			A::error("module", "Type Database [".$name."] not found :(");
 		}
 	}
 	
