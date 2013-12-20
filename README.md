@@ -33,30 +33,22 @@ esta sería la forma de configurar los datos para la conexión (antes de clase).
 
 ``` php
 
-$config = Settings::Init();
-$config->host = 'localhost';
-$config->user = 'root';
-$config->pass = 'root';
-$config->database = 'usuarios';
+A::addVar(array(	'host'=>'localhost',
+					'user'=>'root',
+					'pass'=>'root',
+					'database'=>'database'));
 
 class acNombredelmodulo extends AbstractModule{
 ```
 
-Si se desea configurar internamente (esto para controlar que tipo de conexion se realiza), 
-hay 2 tipos por el momento "sql" o "data", la forma de realizarlo es la siguiente:
+Si se desea configurar internamente (recomendado) la forma de realizarlo es la siguiente:
 
 ``` php
 
 	public function __construct(){
 		parent::__construct();
-		
-		$this->connect("mysql","localhost","user","pass","database"); // Conexión MySQL
+		$this->connect("localhost","user","pass","database"); // Conexión MySQL
 		//Para acceder a sus metodos $this->model
-		
-		//o, y (se puede usar ambos)
-		
-		$this->connect("data","table","pass"); //Se guardará en un archivo llamado name.dac;
-		//Para acceder a sus metodos $this->data
 	}
 	
 ```
@@ -79,17 +71,6 @@ include 'acore.php';
 
 //Ya la instancia de $acore ha sido creada en el include
 $acore->nombredelmodulo->test();
-
-```
-
-En el caso de que el modulo se encuentre en una carpeta (solo un nivel) se llama de la siguiente forma
-
-``` php
-
-include 'acore.php';
-
-//Ya la instancia de $acore ha sido creada en el include
-$acore->carpeta_nombredelmodulo->test();
 
 ```
 
@@ -118,36 +99,12 @@ $acore->modulo2->test(); //Metodo en acModulo2.php
 
 ## Metodos del controller
 
-Acceso a las variables globales dentro de la clase módulo
-
-``` php
-	
-	//Asignar valor
-	$this->acore->var1 = 'Hello';
-	
-	//Obtener valor
-	A::log($this->acore->var1);
-
-```
-o de forma directa.
-``` php
-
-include 'acore.php';
-
-//Asignar valor
-$this->vars->var1 = 'Hello';
-
-//Obtener valor
-A::log($this->vars->var1);
-
-```
 Acceso a model y view.
 ``` php
 	$this->model->metodo; //Accede al model (manejo de base de datos)
 	
 	$this->view->metodo; //Accede al view (crea templates para visualización de datos)
-	
-	$this->data->metodo; //Accede a data (base de datos flat en archivos .dac) Se utiliza como metodo alternativo para proyectos rapidos que no requiera del uso de muchos registros.
+
 ```
 
 ## Metodos del model
@@ -200,48 +157,6 @@ Si se desea solo ver la consulta sin realizarla, se puede activar el modo debug.
 	$this->model->selectIn_products();
 ```
 
-## Metodos del data
-
-Si se utiliza el metodo Data, es para almacenar datos en un archivo plano como si se tratara de una base de datos, se recomienda su uso solo para pocos registros en condiciones donde no es posible una conexión a base de datos.
-
-Metodo uso, conexión y desconexión
-``` php
-	$this->connect('data','filename','password'); //Debe llamarse en el constructor
-	
-	//Acá se realizan las consultas necesarias
-	
-	$this->model->save(); //Importante, si no, no se guardan los datos
-```
-Insertar datos en la base de datos.
-``` php
-	$data = array("field"=>"value","field"=>"value");
-	$this->model->dataInsert($data); //Retorna el id agregado
-```
-Obtener todos los datos.
-``` php
-	$this->model->allData(); //Retorna un arreglo con todos los datos
-```
-Realizar una consulta
-``` php
-	//Obtener un registro conociendo su ID
-	$id = 10;
-	$registro = $this->model->dataSelect($id);
-	
-	//Obtener registros de acuerdo a un criterio
-	$where = array("field"=>10); // Se puede utilizar varios campos, se comportan como AND
-	$registros = $this->model->dataSelect($where);
-```
-Actualizar datos.
-``` php
-	$where = array("field"=>10); // Se puede utilizar varios campos, se comportan como AND
-	$this->model->dataUpdate($where,$data);
-```
-Borrar datos.
-``` php
-	$where = array("field"=>10); // Se puede utilizar varios campos, se comportan como AND
-	$this->model->dataDelete($where);
-```
-
 ## Metodos del view
 
 Crear un template:
@@ -268,14 +183,36 @@ Crear caché
 
 Variables globales del proyecto.
 
+De forma directa
+``` php
+	//Agregar valor
+	A::addVar('host','localhost');
+	
+	//Obtener valor
+	A::getVar('host');
+
+```
+por medio de la instancia
 ``` php
 
-$config = Settings::Init();
-//Asignar valor
-$config->host = 'localhost';
+	include 'acore.php';
+	
+	//Asignar valor
+	$acore->vars->var1 = 'Hello';
+	
+	//Obtener valor
+	A::log($acore->vars->var1);
 
-//Obtener valor
-$config->host;
+```
+o dentro de la clase módulo
+
+``` php
+	
+	//Asignar valor
+	$this->acore->var1 = 'Hello';
+	
+	//Obtener valor
+	A::log($this->acore->var1);
 
 ```
 

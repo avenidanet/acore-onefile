@@ -62,6 +62,7 @@ class A{
 			}
 		}
 	}
+	
 	//Aporte Marvin Solano ->
 	public static function css($directory){
 		if($directory != ''){
@@ -143,6 +144,45 @@ class A{
 		}
 		echo "</pre>";
 	}
+	
+	public static function login($key){
+		$_SESSION['ac_useragent'] = $_SERVER['HTTP_USER_AGENT'];
+		$_SESSION['ac_ip'] = self::getIP();
+		$_SESSION['ac_time'] = time();
+		$_SESSION['ac_logged'] = TRUE;
+		$_SESSION['key'] = self::encrypt("chiwin", $key);
+	}
+	
+	public static function logged(){
+		//por definir
+		return TRUE;
+	}
+	
+	public static function logout(){
+		session_unset();
+		session_destroy();
+		session_start();
+		session_regenerate_id(TRUE);
+	}
+	
+	public static function addVar($field,$value){
+		$data = Settings::Init();
+		if(is_array($field)){
+			$data->multiple($field);
+		}else{
+			$data->multiple(array($field=>$value));
+		}
+	}
+	
+	public static function getVar($field){
+		$data = Settings::Init();
+		return $data->$field;
+	}
+	
+	public static function getIP(){
+		//Por definir
+		return 1;
+	}
 
 	public static function error($method, $message){
 		echo "<p>ACORE_OneFile(".$method."): ".$message."</p>";
@@ -170,6 +210,12 @@ class Settings{
 			self::$instance = new self();
 		}
 		return self::$instance;
+	}
+	
+	public function multiple($data){
+		foreach ($data as $name => $value){
+			$this->vars[$name] = $value;
+		}
 	}
 
 	public function __get($name) {
@@ -241,13 +287,7 @@ class acore{
 	}
 	
 	private function addModule($name){
-		$module = explode("_", $name);
-    	$name = (isset($module[1]))?$module[1]:$module[0];
-		if(isset($module[1])){
-			$file_module = $module[0]."/ac".ucfirst($name).".php";
-		}else{
-			$file_module = "ac".ucfirst($name).".php";
-		}
+		$file_module = "ac".ucfirst($name).".php";
 		
 		if(file_exists($file_module)){
 			require_once($file_module);
@@ -258,15 +298,13 @@ class acore{
 			A::error("core", "Module [".$name."] not found :(");
 			return FALSE;
 		}
-	}		
+	}
 
     public function __get($name) {
-    	$module = explode("_", $name);
-    	$name_tmp = (isset($module[1]))?$module[1]:$module[0];
-		if (!array_key_exists($name_tmp, $this->controllers)) {
+		if (!array_key_exists($name, $this->controllers)) {
             return $this->addModule($name);
         }else{
-			return $this->controllers[$name_tmp];
+			return $this->controllers[$name];
         }
     }
     
@@ -465,94 +503,6 @@ class DatabasePDO extends PDO{
 }
 
 /*
- * CLASS DATA (DB FLAT FILE) | ACORE
-*/
-class Data {
-
-	private $data_source = array();
-	private $dataFile = "acore";
-	private $secure = "%4c0r3$";
-	
-	public function __construct($filename='',$pass=''){
-		$this->secure = ($pass=='')?$this->secure:$pass;
-		$this->dataFile = ($filename=='')?$this->dataFile:$filename;
-
-		if(file_exists($this->dataFile.".acd")){
-			$file = file_get_contents($this->dataFile.".acd");
-			$this->data_source = json_decode(A::decrypt($file,$this->secure),TRUE);
-		}else{
-			$fp = fopen($this->dataFile.".acd","w");
-			fwrite($fp, A::encrypt(json_encode($this->data_source),$this->secure));
-			fclose($fp);
-		}
-	}
-	public function save(){
-		$fp = fopen($this->dataFile.".acd","w");
-		fwrite($fp, A::encrypt(json_encode($this->data_source),$this->secure));
-		fclose($fp);
-	}
-	private function where($conditional){
-		$rows = array();
-		foreach ($this->data_source as $index => $row){
-			$find = 0;
-			$keys = array_keys($conditional);
-			foreach ($keys as $key){
-				if(isset($row[$key]) && $row[$key] == $conditional[$key]){
-					$find++;
-				}
-			}
-			if($find == count($keys)){
-				$rows[] = $index;
-			}
-		}
-		return $rows;
-	}
-	public function queryInsert($data){
-		$this->data_source[] = $data;
-		return end(array_keys($this->data_source));
-	}
-	public function querySelect($where){
-		if(is_array($where)){
-			$search = $this->where($where);
-			$find = array();
-			foreach ($search as $index){
-				$find[] = $this->data_source[$index];
-			}
-			return $find;
-		}else{
-			if($where == "*"){
-				return $this->data_source;
-			}else{
-				return $this->data_source[$where];
-			}
-		}
-	}
-	public function queryUpdate($where,$data){
-		if(is_array($where)){
-			$search = $this->where($where);
-			foreach ($search as $index){
-				$this->data_source[$index] = $data;
-			}
-		}else{
-			$this->data_source[$where] = $data;
-		}
-	}
-	public function queryDelete($where){
-		if(is_array($where)){
-			$search = $this->where($where);
-			foreach ($search as $index){
-				unset($this->data_source[$index]);
-			}
-		}else{
-			unset($this->data_source[$where]);
-		}
-	}
-	public function __call($name,$params){
-		A::error("data", "Method [".$name."] not found :(");
-	}
-}
-
-/*
  * ABSTRACT CLASS MODULE
  */
 abstract class AbstractModule{
@@ -563,23 +513,21 @@ abstract class AbstractModule{
 	public function __construct(){
 		$this->acore = Settings::Init();
 		$this->view = new Template();
-		$this->data = new Data;
-		if(isset($this->acore->host) && isset($this->acore->user) && isset($this->acore->pass) && isset($this->acore->database)){
+		if(	isset($this->acore->host)	
+				&& $this->acore->host != ''
+				&& $this->acore->user != ''
+				&& $this->acore->pass != ''
+				&& $this->acore->database != ''){
 			$this->model = new DatabasePDO;
 		}
 	}
-	public function connect($type,$localhost='',$user='',$pass='',$database=''){
-		if($type == "sql"){
-			$this->acore->host = $localhost;
-			$this->acore->user = $user;
-			$this->acore->pass = $pass;
-			$this->acore->database = $database;
-			$this->model = new DatabasePDO;
-		}elseif($type = "data"){
-			$this->data = new Data($localhost,$user);
-		}else{
-			A::error("module", "Type Database [".$name."] not found :(");
-		}
+	
+	public function connect($localhost='',$user='',$pass='',$database=''){
+		$this->acore->multiple(array(	'host'=>$localhost,
+										'user'=>$user,
+										'pass'=>$pass,
+										'database'=>$database));
+		$this->model = new DatabasePDO;
 	}
 	
 	public function __call($name,$params){
