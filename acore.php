@@ -134,6 +134,10 @@ class A{
 			return $files;
 		}
 	}
+	
+	public static function randString($num){
+		return substr(md5(uniqid()), 0,$num);
+	}
 
 	public static function log($data,$extend=FALSE){
 		echo "<pre>";
@@ -145,17 +149,38 @@ class A{
 		echo "</pre>";
 	}
 	
-	public static function login($key){
+	public static function login(){
+		$key_session = self::randString(10);
 		$_SESSION['ac_useragent'] = $_SERVER['HTTP_USER_AGENT'];
 		$_SESSION['ac_ip'] = self::getIP();
 		$_SESSION['ac_time'] = time();
-		$_SESSION['ac_logged'] = TRUE;
-		$_SESSION['key'] = self::encrypt("chiwin", $key);
+		$_SESSION['ac_sessionkey'] = sha1($key_session);
+		return $key_session;
 	}
 	
-	public static function logged(){
-		//por definir
-		return TRUE;
+	public static function logged($key_session=NULL){
+		$points = 0;
+		if($_SESSION['ac_useragent'] == $_SERVER['HTTP_USER_AGENT']){
+			$points++;
+		}
+		if($_SESSION['ac_ip'] == self::getIP()){
+			$points++;
+		}
+		if((time() - $_SESSION['ac_time']) < (60*15)){ //15 minutes
+			$points++;
+		}
+		if($key_session != NULL){
+			if($_SESSION['ac_sessionkey'] == sha1($key_session)){
+				$points++;
+			}
+		}else{
+			$points++;
+		}
+		if($points == 4){
+			return TRUE;
+		}else{
+			return FALSE;
+		}
 	}
 	
 	public static function logout(){
@@ -180,8 +205,14 @@ class A{
 	}
 	
 	public static function getIP(){
-		//Por definir
-		return 1;
+		if (!empty($_SERVER["HTTP_CLIENT_IP"])){
+			$ip = $_SERVER["HTTP_CLIENT_IP"];
+		}elseif (!empty($_SERVER["HTTP_X_FORWARDED_FOR"])){
+		 	$ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
+		}else{
+		 	$ip = $_SERVER["REMOTE_ADDR"];
+		}
+		return $ip;
 	}
 
 	public static function error($method, $message){
@@ -328,7 +359,10 @@ class DatabasePDO extends PDO{
 	{
 		$this->acore = Settings::Init();
 		try {
-			parent::__construct('mysql:host=' . $this->acore->host . ';dbname=' . $this->acore->database,$this->acore->user, $this->acore->pass);
+			parent::__construct('mysql:host='. $this->acore->host 
+								. ';dbname=' . $this->acore->database,
+								$this->acore->user, 
+								$this->acore->pass);
 		} catch(PDOException $e) {
 			A::error("database", $e->getMessage());
 		}
@@ -345,13 +379,45 @@ class DatabasePDO extends PDO{
 	public function debug(){
 		$this->debug = TRUE;
 	}
-
+	
+	/*
+	 * CREATE TABLE DEFAULT
+	 */
+	public function createTable($name,$fields){
+		$sentence =  "CREATE TABLE IF NOT EXISTS ".$name;
+		$sentence .= " (".$name."_id int(11) unsigned NOT NULL AUTO_INCREMENT,";
+		
+		foreach ($fields as $field => $type){
+			$sentence .=  " ".$name."_".$field;
+			switch ($type){
+				case "INT":
+					$sentence .= " int(11) DEFAULT NULL,";
+					break;
+				case "NUM":
+					$sentence .= " float DEFAULT NULL,";
+					break;
+				case "TXT":
+					$sentence .= " text,";
+					break;
+				case "VAR":
+					$sentence .= " varchar(255) DEFAULT NULL,";
+					break;
+			}
+		}
+		
+		$sentence .= "	".$name."_tag int(1) DEFAULT '0', 
+						".$name."_time timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+						PRIMARY KEY (".$name."_id)
+						) ENGINE=InnoDB DEFAULT CHARSET=utf8;";
+		return $this->sendQuery($sentence,array());
+	}
+	
 	/*
 	 * QUERY NORMAL
 	*
 	* (SELECT :fields) | array(field => value)
 	*/
-	public function queryNormal($sentence,$data){
+	public function queryNormal($sentence,$data=array()){
 		return $this->sendQuery($sentence, $data);
 	}
 
@@ -453,7 +519,7 @@ class DatabasePDO extends PDO{
 	/*
 	 * PDO Send Query ('saneadas')
 	*/
-	private function sendQuery($sentence,$data){
+	private function sendQuery($sentence,$data=array()){
 		if($this->debug){
 			A::error("database", "Debug Mode [".$sentence."]");
 			A::log($data);

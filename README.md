@@ -109,6 +109,16 @@ Acceso a model y view.
 
 ## Metodos del model
 
+Se puede crear una tabla, la cual ya tiene incluido el id, tiempo, y un tag
+
+``` php
+	
+	$fields = array("apellido"=>"VAR","nombre"=>"TXT","telefono"=>"INT","valor"=>"NUM");
+	$this->model->createTable("tabla_nueva", $fields);
+	//Solo la crea si esta no existe, agrega 3 campos ya predefinidos, id AUTO, tag DEFAULT 0, y tiempo TIME
+
+```
+
 Realizar un query en base de datos.
 ``` php
 	//(SELECT :fields) | array(field => value)
@@ -274,6 +284,25 @@ $encriptado = A::encrypt($text,$key);
 
 $desencriptar = A::decrypt($text,$key);
 ```
+
+Crear texto random, parametro aceptado es la cantidad de caracteres
+```php
+$encriptado = A::randString(4);
+```
+
+Sistema basico de logueo
+```php
+ $key = A::login(); //Retorna un key para verificar posteriormente (optional)
+ 
+ A::logged($key); //Devuelve si está logueado, (o cambio de ip, de navegador, la session 15 minutos ya ha terminado)
+ 
+ A::logout(); //Desloguea
+```
+
+Devuelve la IP
+``` php
+	A::getIP();
+```	
 
 Cualquier error o consulta, favor enviarla info[a]avenidanet.com 
 
