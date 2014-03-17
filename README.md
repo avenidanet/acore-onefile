@@ -28,20 +28,7 @@ class acNombredelmodulo extends AbstractModule{
 }
 ```
 
-Por defecto tratará de conectarse a base de datos si la configuración esta presente, 
-esta sería la forma de configurar los datos para la conexión (antes de clase).
-
-``` php
-
-A::addVar(array(	'host'=>'localhost',
-					'user'=>'root',
-					'pass'=>'root',
-					'database'=>'database'));
-
-class acNombredelmodulo extends AbstractModule{
-```
-
-Si se desea configurar internamente (recomendado) la forma de realizarlo es la siguiente:
+Esta sería la configuración para la base de datos, se crea en el constructor:
 
 ``` php
 

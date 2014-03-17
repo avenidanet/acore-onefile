@@ -579,13 +579,6 @@ abstract class AbstractModule{
 	public function __construct(){
 		$this->acore = Settings::Init();
 		$this->view = new Template();
-		if(	isset($this->acore->host)	
-				&& $this->acore->host != ''
-				&& $this->acore->user != ''
-				&& $this->acore->pass != ''
-				&& $this->acore->database != ''){
-			$this->model = new DatabasePDO;
-		}
 	}
 	
 	public function connect($localhost='',$user='',$pass='',$database=''){
