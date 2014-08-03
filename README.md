@@ -192,7 +192,6 @@ Crear caché
 ```
 
 Variables globales del proyecto.
-
 De forma directa
 ``` php
 	//Agregar valor
@@ -215,7 +214,6 @@ por medio de la instancia
 
 ```
 o dentro de la clase módulo
-
 ``` php
 	
 	//Asignar valor
@@ -298,7 +296,7 @@ Devuelve la IP
 
 ## Contribuir
 
-Cualquier error o consulta, favor enviarla info[a]avenidanet.com 
+Cualquier error o consulta, favor enviarla a info[a]avenidanet.com 
 
 ## Licencia
 
@@ -306,7 +304,7 @@ Este desarrollo esta bajo licencia MIT.
 
 The MIT License (MIT)
 
-Copyright (c) 2006-2013 Brian Salazar [www.avenidanet.com]
+Copyright (c) 2006 Brian Salazar [www.avenidanet.com]
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
