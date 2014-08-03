@@ -1,6 +1,6 @@
 ACore (One File)
 ====
-##Simple Framework PHP v.1.1.0
+##Simple Framework PHP v.1.2.0
 
 ![New Acore](http://avenidanet.com/acore/tree_acore.jpg)
 
@@ -16,28 +16,19 @@ Además gestiona fácilmente base de datos, templates, llamados a apis, validaci
 
 ## Modo de uso
 
-Solo es necesario el archivo acore.php, crear un modulo representado por el uso de un archivo llamado acNombredelmodulo.php (en el repositorio se ofrece una demo llamada acMain.php) y el archivo que va hacer uso del acore en este caso index.php.
+Solo es necesario el archivo acore.php. 
+A partir de ahora es crear un modulo representado por el uso de un archivo llamado acNombredelmodulo.php.
 
-Los módulos se reconocen por esta nomenclatura acNombredelmodulo.php. 
+## Crear un módulo
 
-Se crea una clase con el nombre del archivo, siendo una extensión de AbstractModule
+Los módulos se reconocen por esta nomenclatura acNombredelmodulo.php. (La primera inicial en Mayúscula)
+
+Se crea una clase con el nombre del archivo, siendo una extensión de AbstractModule, llamada igual que el archivo.
 
 ``` php
 class acNombredelmodulo extends AbstractModule{
 	//Metodos propios
 }
-```
-
-Esta sería la configuración para la base de datos, se crea en el constructor:
-
-``` php
-
-	public function __construct(){
-		parent::__construct();
-		$this->connect("localhost","user","pass","database"); // Conexión MySQL
-		//Para acceder a sus metodos $this->model
-	}
-	
 ```
 
 Este es un ejemplo de un metodo controlador
@@ -50,15 +41,29 @@ Este es un ejemplo de un metodo controlador
 
 ```
 
-Para utilizarlo en el proyecto (index.php u otro)
+Para utilizarlo en el proyecto (index.php u otro) se llama como un método de la instancia $acore y en este caso en minúscula.
 
 ``` php
 
 include 'acore.php';
 
-//Ya la instancia de $acore ha sido creada en el include
+//Ya la instancia de $acore ha sido creada al ser incluído el Acore
 $acore->nombredelmodulo->test();
 
+```
+
+Esta sería la configuración para la base de datos, se crea en el constructor:
+
+``` php
+
+	public function __construct(){
+		parent::__construct();
+		$this->connect("localhost","user","pass","database"); // Conexión MySQL
+		
+		//Para acceder a sus metodos $this->model
+
+	}
+	
 ```
 
 Ejemplo de un metodo controlador con model (tabla usuarios), utilizando los metodos estaticos de la clase A para desplegar la información tomada de la consulta select a la base de datos "Usuarios"
@@ -67,6 +72,8 @@ Ejemplo de un metodo controlador con model (tabla usuarios), utilizando los meto
 
 	public function testDB(){
 		echo "Hello Acore with DB";
+
+		//Previamente debemos haber configurado la base de datos
 		$data = $this->model->querySelect("usuarios");
 		A::log($data);
 	}
@@ -96,8 +103,7 @@ Acceso a model y view.
 
 ## Metodos del model
 
-Se puede crear una tabla, la cual ya tiene incluido el id, tiempo, y un tag
-
+Se puede crear una tabla, además de los campos enviados (se definen sus tipos basicos VAR,TXT,INT,NUM) ya tiene incluido el id, tiempo, y un tag
 ``` php
 	
 	$fields = array("apellido"=>"VAR","nombre"=>"TXT","telefono"=>"INT","valor"=>"NUM");
@@ -108,14 +114,15 @@ Se puede crear una tabla, la cual ya tiene incluido el id, tiempo, y un tag
 
 Realizar un query en base de datos.
 ``` php
-	//(SELECT :fields) | array(field => value)
+	//Segundo parametro se pasa un array con los parametros a agregar.
 	$this->model->queryNormal('SELECT * FROM tabla WHERE id = :campo',array('campo'=>'valor'));
 ```
 Realizar una consulta
 ``` php
 	//(SELECT * FROM table WHERE field= :field ORDER BY field ASC LIMIT 0,100) | array(field => value)
 	$this->model->querySelect($table,'*',$where,$fields=array(),$order,$limit,$other);
-	//or
+	
+	//o método rápido
 	$this->model->selectIn_nametable('*',$where,$fields=array(),$order,$limit,$other);
 	// Example: $this->model->selectIn_products();
 ```
@@ -129,21 +136,24 @@ Insertar datos en la base de datos.
 ``` php
 	//(INSERT INTO table (fields) as (:fields)) | array(field=> value)
 	$this->model->queryInsert($table,$data);
-	//or
+
+	//o método rápido
 	$this->model->insertIn_nametable($data); // Example: $this->model->insertIn_products($data);
 ```
 Actualizar datos en la base de datos.
 ``` php
 	//(UPDATE table SET field = :field WHERE field = :field)
 	$this->model->queryUpdate($table,$data,$where,$fields);
-	//or
+	
+	//o método rápido
 	$this->model->updateIn_nametable($data,$where,$fields);
 ```
 Borrar datos en la base de datos.
 ``` php
 	//(DELETE FROM table WHERE field = :field)
 	$this->model->queryDelete($table,$where,$fields);
-	//or
+	
+	//o método rápido
 	$this->model->deleteIn_nametable($where,$fields);
 ```
 
@@ -156,13 +166,16 @@ Si se desea solo ver la consulta sin realizarla, se puede activar el modo debug.
 
 ## Metodos del view
 
-Crear un template:
+Crear un template, en este caso un 'input':
 ``` php
 $this->view->input = "[:id]<input type='text' />[:email] [:fecha] [:identificacion]<br/>";
 ```
 Usar un template, $data es un arreglo con los registros y cada unos de los campos a reemplazar [:campo]
 ``` php
-//Se repite tantas veces como registros se encuentren.
+$data[] = array("email"=>"test1@dominio.com","fecha"=>"Hoy","identificacion"=>"ID01");
+$data[] = array("email"=>"test2@dominio.com","fecha"=>"Ayer","identificacion"=>"ID02");
+
+//Se repite tantas veces como registros se encuentren. 2 en este caso y se rellena con la información de cada registro
 $this->view->input($data);
 ```
 
@@ -233,7 +246,6 @@ Con CSS solo se debe agregar el directorio.
 </body>
 ```
 Log, muestra de arreglos o datos.
-
 ``` php
 $array_fruits = array('orange','banana');
 A::log($array_fruits); //Log normal
@@ -241,21 +253,14 @@ A::log($array_fruits,true); //Log extendido
 ```
 
 Error, mostrar un error para realizar cualquier tipo de debug.
-
 ``` php
 A::error('lugar donde se produce el error','descripcion del error');
 ```
 
 Validar datos.
 Tipos: text, number, phone, email, name, id
-
 ``` php
 A::validate('texto a evaluar','tipo');
-```
-
-Angular parametros, devuelve en un arreglo valores pasados por el metodo http de angular
-``` php
-$data = A::ng_params();
 ```
 
 Listar un directorio, obtener resultado en un arreglo
@@ -277,7 +282,7 @@ Crear texto random, parametro aceptado es la cantidad de caracteres
 $encriptado = A::randString(4);
 ```
 
-Sistema basico de logueo
+Sistema básico de logueo
 ```php
  $key = A::login(); //Retorna un key para verificar posteriormente (optional)
  
@@ -291,7 +296,11 @@ Devuelve la IP
 	A::getIP();
 ```	
 
+## Contribuir
+
 Cualquier error o consulta, favor enviarla info[a]avenidanet.com 
+
+## Licencia
 
 Este desarrollo esta bajo licencia MIT.
 

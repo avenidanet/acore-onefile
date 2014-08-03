@@ -1,6 +1,6 @@
 <?php
 /**
-* ACore OneFile v.1.1.0
+* ACore OneFile v.1.2.0
 *
 * Simple framework php
 *
@@ -24,7 +24,7 @@ class A{
 	}
 	
 	public static function cache_begin($name,$cachetime=60){
-		$cachefile = 'cached-'.$name.'.html';
+		$cachefile = 'cached-'.$name.'.acc';
 		
 		if (file_exists($cachefile) && time() - $cachetime < filemtime($cachefile)) {
 			include($cachefile);
@@ -34,7 +34,7 @@ class A{
 	}
 	
 	public static function cache_end($name){
-		$cachefile = 'cached-'.$name.'.html';
+		$cachefile = 'cached-'.$name.'.acc';
 		$cached = fopen($cachefile, 'w');
 		fwrite($cached, ob_get_contents());
 		fclose($cached);
@@ -75,10 +75,6 @@ class A{
 		}
 	}
 	//<-
-	
-	public static function ng_params(){
-		return json_decode(file_get_contents('php://input'));
-	}
 	
 	public static function validate($string,$type='text'){
 		$patterns = array(	'text'=>'/^[a-z\d_ .áéíóúñ]{1,255}$/i',
