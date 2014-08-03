@@ -4,20 +4,20 @@ ACore (One File)
 
 ![New Acore](http://avenidanet.com/acore/tree_acore.jpg)
 
-Versión ligera del proyecto Acore.
+Versión unificada (en un solo archivo) del proyecto Acore.
 
 http://www.avenidanet.com
 
 Documentación y proyecto en http://www.avenidanet.com/acore (No habilitado todavía)
 
 Desarrollo orientado a módulos (basados en Model View Controller). 
-Cada modulo es llamado ACM (ACore Módulo). 
+Cada módulo es llamado ACM (ACore Módulo). 
 Además gestiona fácilmente base de datos, templates, llamados a apis, validaciones, etc.
 
 ## Modo de uso
 
 Solo es necesario el archivo acore.php. 
-A partir de ahora es crear un modulo representado por el uso de un archivo llamado acNombredelmodulo.php.
+A partir de ahora es crear un módulo representado por el uso de un archivo llamado acNombredelmodulo.php.
 
 ## Crear un módulo
 
@@ -27,11 +27,11 @@ Se crea una clase con el nombre del archivo, siendo una extensión de AbstractMo
 
 ``` php
 class acNombredelmodulo extends AbstractModule{
-	//Metodos propios
+	//Métodos propios
 }
 ```
 
-Este es un ejemplo de un metodo controlador
+Este es un ejemplo de un método controlador
 
 ``` php
 
@@ -60,13 +60,13 @@ Esta sería la configuración para la base de datos, se crea en el constructor:
 		parent::__construct();
 		$this->connect("localhost","user","pass","database"); // Conexión MySQL
 		
-		//Para acceder a sus metodos $this->model
+		//Para acceder a sus métodos $this->model
 
 	}
 	
 ```
 
-Ejemplo de un metodo controlador con model (tabla usuarios), utilizando los metodos estaticos de la clase A para desplegar la información tomada de la consulta select a la base de datos "Usuarios"
+Ejemplo de un método controlador con model (tabla usuarios), utilizando los métodos estaticos de la clase A para desplegar la información tomada de la consulta select a la base de datos "Usuarios"
 
 ``` php
 
@@ -80,18 +80,20 @@ Ejemplo de un metodo controlador con model (tabla usuarios), utilizando los meto
 
 ```
 
-Se pueden crear cuantos modulos se necesiten, cada uno gestiona un controller, model o data y view totalmente independiente.
+Se pueden crear cuantos módulos se necesiten, cada uno gestiona un controller, model o data y view totalmente independiente.
 
 ``` php
 include 'acore.php';
 
-$acore->modulo1->test(); //Metodo en acModulo1.php
+$acore->modulo1->test(); //Método en acModulo1.php
 
-$acore->modulo2->test(); //Metodo en acModulo2.php
+$acore->modulo2->test(); //Método en acModulo2.php
 
 ```
 
-## Metodos del controller
+**NOTA: El módulo debe estar en el directorio de los archivos que lo deseen utilizar.**
+
+## Métodos del controller
 
 Acceso a model y view.
 ``` php
@@ -101,7 +103,7 @@ Acceso a model y view.
 
 ```
 
-## Metodos del model
+## Métodos del model
 
 Se puede crear una tabla, además de los campos enviados (se definen sus tipos basicos VAR,TXT,INT,NUM) ya tiene incluido el id, tiempo, y un tag
 ``` php
@@ -164,7 +166,7 @@ Si se desea solo ver la consulta sin realizarla, se puede activar el modo debug.
 	$this->model->selectIn_products();
 ```
 
-## Metodos del view
+## Métodos del view
 
 Crear un template, en este caso un 'input':
 ``` php
@@ -179,7 +181,7 @@ $data[] = array("email"=>"test2@dominio.com","fecha"=>"Ayer","identificacion"=>"
 $this->view->input($data);
 ```
 
-## Metodos generales
+## Métodos generales
 
 Crear caché
 ``` php
